@@ -50,12 +50,11 @@ document.addEventListener("DOMContentLoaded", function() {
   }
   cy.onchange = runCal; cm.onchange = runCal; cd.onchange = runCal; runCal();
 
-  function sendXHR(url, key, payload) {
+  function sendXHR(url, payload) {
     return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
       xhr.open("POST", url, true);
       xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.setRequestHeader("x-goog-api-key", key);
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           try { resolve(JSON.parse(xhr.responseText)); }
@@ -81,8 +80,8 @@ document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < models.length; i++) {
       try {
         var base = "https://googleapis.com";
-        var endpoint = base + models.at(i) + ":generateContent";
-        var j = await sendXHR(endpoint, key, { contents: [{ parts: [{ text: prompt }] }] });
+        var endpoint = base + models.at(i) + ":generateContent?key=" + encodeURIComponent(key);
+        var j = await sendXHR(endpoint, { contents: [{ parts: [{ text: prompt }] }] });
         if (j.candidates && j.candidates.at(0)) {
           outEl.textContent = j.candidates.at(0).content.parts.at(0).text;
           outEl.style.display = 'block';
