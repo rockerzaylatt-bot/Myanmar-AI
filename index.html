@@ -3,128 +3,184 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Myanmar Super AI - TikTok & ဗေဒင်</title>
-<link href="https://googleapis.com" rel="stylesheet">
+<title>Myanmar Super AI</title>
 <style>
-  :root {
-    --bg: #090a0f; --card: #151823; --cyan: #00f2fe; --pink: #fe2c55;
-    --gold: #ffd700; --green: #00ff88; --text: #ffffff; --muted: #9ca3af;
-  }
-  * { box-sizing: border-box; font-family: 'Noto Sans Myanmar', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { background-color: var(--bg); color: var(--text); padding-bottom: 85px; }
-  .header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 16px; background: rgba(21, 24, 35, 0.96);
-    border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 100;
-  }
-  .logo { font-size: 17px; font-weight: 700; background: linear-gradient(90deg, var(--cyan), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .api-btn { background: rgba(0, 242, 254, 0.12); border: 1px solid var(--cyan); color: var(--cyan); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  * { box-sizing: border-box; font-family: sans-serif; margin: 0; padding: 0; }
+  body { background: #090a0f; color: #fff; padding-bottom: 70px; }
+  .header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #151823; border-bottom: 1px solid #2a2e3f; }
+  .logo { font-size: 17px; font-weight: bold; color: #00f2fe; }
+  .api-btn { background: #1e293b; border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 20px; font-size: 12px; }
   .container { padding: 14px; max-width: 500px; margin: 0 auto; }
-  .clock-card { background: linear-gradient(135deg, #191d2e, #11131f); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 16px; padding: 14px; margin-bottom: 14px; }
+  .clock-card { background: #151823; border: 1px solid #00f2fe44; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
   .clock-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .time-text { font-size: 15px; font-weight: 700; color: var(--cyan); }
-  .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
-  .status-peak { background: rgba(0, 255, 136, 0.15); color: var(--green); border: 1px solid var(--green); }
-  .status-off { background: rgba(255, 170, 0, 0.15); color: #ffaa00; border: 1px solid #ffaa00; }
-  .clock-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
-  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; }
-  .tab-btn { background: var(--card); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); padding: 10px 4px; border-radius: 12px; font-size: 11.5px; font-weight: 600; cursor: pointer; text-align: center; }
-  .tab-btn.active { background: linear-gradient(135deg, rgba(0,242,254,0.2), rgba(254,44,85,0.25)); border-color: var(--pink); color: #fff; }
+  .time-text { font-size: 15px; font-weight: bold; color: #00f2fe; }
+  .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; background: #00ff8822; color: #00ff88; }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+  .tab-btn { background: #151823; border: 1px solid #2a2e3f; color: #9ca3af; padding: 10px 4px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+  .tab-btn.active { background: #fe2c5533; border-color: #fe2c55; color: #fff; }
   .section { display: none; }
   .section.active { display: block; }
-  .card { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.06); }
-  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--cyan); display: flex; align-items: center; gap: 6px; }
-  .pills { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
-  .pill { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 6px 11px; border-radius: 20px; font-size: 12.5px; cursor: pointer; }
-  .pill.selected { background: var(--pink); border-color: var(--pink); font-weight: 600; }
-  .pill.gold.selected { background: var(--gold); border-color: var(--gold); color: #000; }
-  textarea, input[type="text"], select { width: 100%; background: #0d0f17; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 12px; resize: none; }
-  .date-grid { display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 8px; }
-  .main-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 14.5px; font-weight: 700; color: #fff; background: linear-gradient(90deg, var(--pink), #ff5e7e); cursor: pointer; }
-  .gold-btn { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #000; }
-  .cyan-btn { background: linear-gradient(90deg, #0284c7, #00f2fe); color: #000; }
-  .result-box { background: #0d0f17; border-radius: 12px; padding: 14px; margin-top: 14px; border-left: 4px solid var(--cyan); font-size: 13.5px; line-height: 1.75; white-space: pre-wrap; }
-  .action-row { display: flex; gap: 10px; margin-top: 10px; }
-  .copy-btn { flex: 1; background: rgba(0, 242, 254, 0.15); border: 1px solid var(--cyan); color: var(--cyan); padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .tiktok-btn { flex: 1; background: rgba(254, 44, 85, 0.15); border: 1px solid var(--pink); color: var(--pink); padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
-  .guide-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .guide-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-  .guide-head { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
-  .do-text { color: var(--green); }
-  .dont-text { color: #ff4d6d; }
-  .guide-body { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
-  .check-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; cursor: pointer; }
-  .check-row input { width: 18px; height: 18px; accent-color: var(--cyan); flex-shrink: 0; }
-  .progress-bar { height: 8px; background: #0d0f17; border-radius: 10px; overflow: hidden; margin-top: 8px; }
-  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--green)); transition: 0.3s; }
-  .cal-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13.5px; }
-  .cal-val { font-weight: 700; color: var(--gold); }
-  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
-  .modal-box { background: var(--card); padding: 20px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid var(--cyan); }
-  .ad-banner { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #10121b; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); z-index: 90; }
-  .loader { display: none; text-align: center; padding: 15px; color: var(--cyan); font-size: 13.5px; font-weight: 600; }
+  .card { background: #151823; border-radius: 14px; padding: 15px; margin-bottom: 14px; }
+  .title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #00f2fe; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .pill { background: #222636; border: 1px solid #33384d; color: #fff; padding: 6px 10px; border-radius: 16px; font-size: 12px; }
+  .pill.selected { background: #fe2c55; border-color: #fe2c55; }
+  textarea, input, select { width: 100%; background: #0d0f17; border: 1px solid #2a2e3f; border-radius: 10px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 12px; }
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; color: #fff; background: #fe2c55; }
+  .gold-btn { background: #f59e0b; color: #000; }
+  .result { background: #0d0f17; border-radius: 10px; padding: 12px; margin-top: 12px; border-left: 3px solid #00f2fe; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; display: none; }
+  .copy-btn { width: 100%; margin-top: 8px; padding: 10px; background: #00f2fe22; border: 1px solid #00f2fe; color: #00f2fe; border-radius: 8px; font-weight: bold; }
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+  .modal-box { background: #151823; padding: 20px; border-radius: 14px; width: 100%; max-width: 380px; border: 1px solid #00f2fe; }
+  .ad { position: fixed; bottom: 0; left: 0; right: 0; height: 50px; background: #10121b; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">🎵 Myanmar Super AI</div>
-  <button class="api-btn" onclick="openModal()">⚙️ API Key</button>
+  <button class="api-btn" id="btnApi">⚙️ API Key</button>
 </div>
 
 <div class="container">
   <div class="clock-card">
     <div class="clock-top">
-      <div class="time-text" id="yangonTime">ရန်ကုန်စံတော်ချိန်...</div>
-      <div class="status-badge" id="peakBadge">စစ်ဆေးနေသည်...</div>
+      <div class="time-text" id="ygnTime">ရန်ကုန်အချိန်...</div>
+      <div class="badge" id="ygnStatus">Peak Time</div>
     </div>
-    <div class="clock-desc" id="peakDesc"></div>
+    <div style="font-size:12px; color:#9ca3af;" id="ygnDesc">နေ့လယ် ၁၁-၂ နှင့် ည ၇-၁၁ နာရီသည် တင်ရန် အကောင်းဆုံးအချိန်ဖြစ်သည်။</div>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('tiktok', this)">✍️ စာရေးစက်</button>
-    <button class="tab-btn" onclick="switchTab('growth', this)">🚀 Viewတိုးနည်း</button>
-    <button class="tab-btn" onclick="switchTab('vedin', this)">🔮 AI ဗေဒင်</button>
-    <button class="tab-btn" onclick="switchTab('cal', this)">📅 ပြက္ခဒိန်</button>
+    <button class="tab-btn active" data-tab="t1">✍️ စာရေး</button>
+    <button class="tab-btn" data-tab="t2">🚀 Viewတိုး</button>
+    <button class="tab-btn" data-tab="t3">🔮 ဗေဒင်</button>
+    <button class="tab-btn" data-tab="t4">📅 ပြက္ခဒိန်</button>
   </div>
 
-  <div id="tab-tiktok" class="section active">
+  <div id="t1" class="section active">
     <div class="card">
-      <div class="card-title">✨ TikTok ကြော်ငြာစာ & ပြောစကား စက်</div>
-      <div class="pills" id="ttCats">
-        <div class="pill selected" onclick="selectPill(this, 'ttCats')">🛍️ ဈေးရောင်းရန်</div>
-        <div class="pill" onclick="selectPill(this, 'ttCats')">😂 ဟာသ/ဖျော်ဖြေ</div>
-        <div class="pill" onclick="selectPill(this, 'ttCats')">💡 ဗဟုသုတ</div>
-        <div class="pill" onclick="selectPill(this, 'ttCats')">💔 ခံစားချက်</div>
+      <div class="title">✨ TikTok ကြော်ငြာစာ & Script</div>
+      <div class="pills" id="catPills">
+        <span class="pill selected">🛍️ ဈေးရောင်း</span>
+        <span class="pill">😂 ဟာသ</span>
+        <span class="pill">💡 ဗဟုသုတ</span>
+        <span class="pill">💔 အသည်းကွဲ</span>
       </div>
-      <textarea id="ttInput" rows="3" placeholder="သင့်ပစ္စည်း သို့မဟုတ် ဗီဒီယို အကြောင်းအရာ ရေးပါ (ဥပမာ - အသားဖြူလိုးရှင်း ရောင်းမည်)"></textarea>
-      <button class="main-btn" onclick="generateTikTok()">✨ FYP တင်ဖို့ အကုန်ထုတ်ပေးပါ</button>
-      <div class="loader" id="ttLoader">AI စဉ်းစားနေပါသည်... ခဏစောင့်ပါနော် ✨</div>
-      <div id="ttResult" style="display:none;">
-        <div class="result-box" id="ttOutput"></div>
-        <div class="action-row">
-          <button class="copy-btn" onclick="copyText('ttOutput')">📋 စာသား Copy ကူးမည်</button>
-          <a href="https://tiktok.com" target="_blank" class="tiktok-btn">🎵 TikTok ဖွင့်မည်</a>
-        </div>
-      </div>
+      <textarea id="ttTopic" rows="3" placeholder="ပစ္စည်း သို့မဟုတ် ဗီဒီယိုအကြောင်း ရေးပါ..."></textarea>
+      <button class="btn" id="btnGenTT">✨ FYP တင်ဖို့ ထုတ်ပေးပါ</button>
+      <div class="result" id="resTT"></div>
+      <button class="copy-btn" id="copyTT" style="display:none;">📋 Copy ကူးမည်</button>
     </div>
   </div>
 
-  <div id="tab-growth" class="section">
+  <div id="t2" class="section">
     <div class="card">
-      <div class="card-title">📊 ဗီဒီယို မတင်ခင် စစ်ဆေးရန် (<span id="fypScore">0%</span>)</div>
-      <label class="check-row"><input type="checkbox" onchange="updateScore()"> ပထမ ၃ စက္ကန့်အတွင်း စာတန်းအကြီးကြီး ထည့်ပြီးပြီ</label>
-      <label class="check-row"><input type="checkbox" onchange="updateScore()"> ဗီဒီယို အရည်အသွေး 1080p HD ချိန်ပြီးပြီ</label>
-      <label class="check-row"><input type="checkbox" onchange="updateScore()"> ခေတ်စားနေတဲ့ သီချင်းသံ (Trending Sound) သုံးထားတယ်</label>
-      <label class="check-row"><input type="checkbox" onchange="updateScore()"> တင်ပြီးပြီးချင်း ကိုယ့်အကောင့်နဲ့ ပြန်မကြည့်ဘဲ နေမယ်</label>
-      <div class="progress-bar"><div class="progress-fill" id="fypFill"></div></div>
+      <div class="title">🎯 ကြော်ငြာ & View တက်နည်း မေးရန်</div>
+      <input type="text" id="adTopic" placeholder="သင့်လုပ်ငန်းအမျိုးအစား ရေးပါ...">
+      <button class="btn" id="btnGenAd">💡 အကြံဉာဏ် တောင်းမည်</button>
+      <div class="result" id="resAd"></div>
     </div>
-
     <div class="card">
-      <div class="card-title">🎯 ကိုယ့်လုပ်ငန်းအတွက် ကြော်ငြာအကြံဉာဏ် မေးရန်</div>
-      <input type="text" id="adInput" placeholder="ဘာရောင်းတာလဲ / ဘာအကောင့်လဲ ရေးပါ (ဥပမာ - အဝတ်အထည်ဆိုင်)">
-      <button class="main-btn" onclick="generateAdAdvice()">💡 View တက်မယ့် အကြံဉာဏ် တောင်းမည်</button>
-      <div class="loader" id="adLoader">အကြံဉာဏ် ထုတ်ပေးနေပါသည်... ✨</div>
-      <div id="adResult" style="display:none;">
+      <div class="title">🔥 ရှောင်ရန် / ဆောင်ရန်</div>
+      <p style="font-size:13px; color:#ccc; line-height:1.6;">
+        ✅ <b>ဆောင်ရန်:</b> ပထမ ၃ စက္ကန့်အတွင်း စာတန်းအကြီးကြီး ထည့်ပါ။ Comment များအောင် မေးခွန်းမေးပါ။<br><br>
+        ❌ <b>ရှောင်ရန်:</b> တင်ပြီးပြီးချင်း ကိုယ့်အကောင့်နဲ့ ပြန်မကြည့်ပါနဲ့။ တခြား App တံဆိပ်ပါတာ မတင်ပါနဲ့။
+      </p>
+    </div>
+  </div>
+
+  <div id="t3" class="section">
+    <div class="card">
+      <div class="title" style="color:#ffd700;">🔮 ၇ ရက်သားသမီး ဗေဒင်</div>
+      <div class="pills" id="dayPills">
+        <span class="pill selected">တနင်္ဂနွေ</span><span class="pill">တနင်္လာ</span><span class="pill">အင်္ဂါ</span>
+        <span class="pill">ဗုဒ္ဓဟူး</span><span class="pill">ကြာသပတေး</span><span class="pill">သောကြာ</span><span class="pill">စနေ</span>
+      </div>
+      <input type="text" id="vdTopic" placeholder="သိချင်တာ မေးပါ (ဥပမာ - အချစ်ရေး၊ ငွေကြေး)">
+      <button class="btn gold-btn" id="btnGenVd">🔮 ဟောစာတမ်း ကြည့်မည်</button>
+      <div class="result" id="resVd" style="border-color:#ffd700;"></div>
+    </div>
+  </div>
+
+  <div id="t4" class="section">
+    <div class="card">
+      <div class="title">📅 မြန်မာ နှစ် ၁၀၀ ပြက္ခဒိန်</div>
+      <select id="cYear"></select>
+      <select id="cMonth">
+        <option value="1">ဇန်နဝါရီ</option><option value="2">ဖေဖော်ဝါရီ</option><option value="3">မတ်</option>
+        <option value="4">ဧပြီ</option><option value="5">မေ</option><option value="6">ဇွန်</option>
+        <option value="7">ဇူလိုင်</option><option value="8">ဩဂုတ်</option><option value="9">စက်တင်ဘာ</option>
+        <option value="10">အောက်တိုဘာ</option><option value="11">နိုဝင်ဘာ</option><option value="12">ဒီဇင်ဘာ</option>
+      </select>
+      <select id="cDay"></select>
+      <div id="calOut" style="padding:10px; background:#0d0f17; border-radius:10px; font-size:14px; line-height:1.8; color:#ffd700;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="apiModal">
+  <div class="modal-box">
+    <div class="title">🔑 Google API Key ထည့်ရန်</div>
+    <input type="text" id="keyInput" placeholder="AQ... သို့မဟုတ် AIza... ထည့်ပါ">
+    <button class="btn" id="btnSaveKey">💾 Save သိမ်းမည်</button>
+    <button class="copy-btn" id="btnCloseModal">ပိတ်မည်</button>
+  </div>
+</div>
+
+<div class="ad">📢 Google AdMob / AdSense ကြော်ငြာနေရာ</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Clock
+  function tick() {
+    var d = new Date();
+    var t = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('ygnTime').textContent = "🇲🇲 ရန်ကုန် - " + t;
+  }
+  setInterval(tick, 1000);
+  tick();
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  // Pills
+  document.querySelectorAll('.pills').forEach(function(group) {
+    group.querySelectorAll('.pill').forEach(function(p) {
+      p.addEventListener('click', function() {
+        group.querySelectorAll('.pill').forEach(function(x) { x.classList.remove('selected'); });
+        p.classList.add('selected');
+      });
+    });
+  });
+
+  // Modal
+  document.getElementById('btnApi').addEventListener('click', function() {
+    document.getElementById('keyInput').value = localStorage.getItem('g_key') || '';
+    document.getElementById('apiModal').style.display = 'flex';
+  });
+  document.getElementById('btnCloseModal').addEventListener('click', function() {
+    document.getElementById('apiModal').style.display = 'none';
+  });
+  document.getElementById('btnSaveKey').addEventListener('click', function() {
+    localStorage.setItem('g_key', document.getElementById('keyInput').value.trim());
+    document.getElementById('apiModal').style.display = 'none';
+    alert("သိမ်းဆည်းပြီးပါပြီ ✅");
+  });
+
+  // Calendar
+  var cy = document.getElementById('cYear'), cd = document.getElementById('cDay'), cm = document.getElementById('cMonth');
+  for (var y = 2026; y >= 1926; y--) { var o = document.createElement('option'); o.value = y; o.textContent = y + " ခု"; cy.appendChild(o); }
+  for (var d = 1; d <= 31; d++) { var o = document.createElement('option'); o.value = d; o.textContent = d + " ရက်"; cd.appendChild(o); }
+  var now = new Date(); cy.value = now.getFullYear(); cm.value = now.getMonth() + 1; cd.value = now.getDate();
+
+  function runCal() {
+    var y = parseInt(cy.value), m = parseInt(cm.value), d = parseInt(cd.value);
+    var dt = new Date(y, m - 1, d);
