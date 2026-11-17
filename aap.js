@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function() {
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         var j = await r.json();
-        if (j.candidates && j.candidates[0]) {
+        if (j.candidates && j.candidates[0] && j.candidates[0].content) {
           outEl.textContent = j.candidates[0].content.parts[0].text;
           outEl.style.display = 'block';
           if (copyEl) copyEl.style.display = 'block';
