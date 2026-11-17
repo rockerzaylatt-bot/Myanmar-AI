@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
   };
   document.getElementById('btnCloseModal').onclick = function() { document.getElementById('apiModal').style.display = 'none'; };
   document.getElementById('btnSaveKey').onclick = function() {
-    var cleanKey = document.getElementById('keyInput').value.replace(/[^a-zA-Z0-9._-]/g, '');
+    var cleanKey = document.getElementById('keyInput').value.replace(/[^a-zA-Z0-9_-]/g, '');
     localStorage.setItem('g_key', cleanKey);
     document.getElementById('apiModal').style.display = 'none';
     alert("သိမ်းဆည်းပြီးပါပြီ ✅");
@@ -50,42 +50,24 @@ document.addEventListener("DOMContentLoaded", function() {
   }
   cy.onchange = runCal; cm.onchange = runCal; cd.onchange = runCal; runCal();
 
-  function sendXHR(url, payload) {
-    return new Promise(function(resolve, reject) {
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", url, true);
-      xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          try { resolve(JSON.parse(xhr.responseText)); }
-          catch (e) { reject(new Error("HTTP " + xhr.status)); }
-        }
-      };
-      xhr.onerror = function() { reject(new Error("Network Error")); };
-      xhr.send(JSON.stringify(payload));
-    });
-  }
-
   async function askAI(prompt, outEl, btnEl, copyEl) {
-    var rawKey = localStorage.getItem('g_key') || '';
-    var key = rawKey.replace(/[^a-zA-Z0-9._-]/g, '');
+    var key = (localStorage.getItem('g_key') || '').replace(/[^a-zA-Z0-9_-]/g, '');
     if (!key) { alert("ညာဘက်အပေါ်က ⚙️ API Key အရင်ထည့်ပါ!"); return; }
     var oldText = btnEl.textContent;
     btnEl.textContent = "စဉ်းစားနေပါသည်... ✨";
     outEl.style.display = 'none';
     if (copyEl) copyEl.style.display = 'none';
 
-    var endpoints = [
-      "https://googleapis.com" + encodeURIComponent(key),
-      "https://googleapis.com" + encodeURIComponent(key),
-      "https://googleapis.com" + encodeURIComponent(key)
-    ];
-
+    var models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
     var lastErr = "Connection Failed";
-    for (var i = 0; i < endpoints.length; i++) {
+    for (var i = 0; i < models.length; i++) {
       try {
-        var payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-        var j = await sendXHR(endpoints.at(i), payload);
+        var r = await fetch("https://googleapis.com" + models.at(i) + ":generateContent?key=" + key, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        var j = await r.json();
         if (j.candidates && j.candidates.at(0)) {
           outEl.textContent = j.candidates.at(0).content.parts.at(0).text;
           outEl.style.display = 'block';
