@@ -28,7 +28,8 @@ document.addEventListener("DOMContentLoaded", function() {
   };
   document.getElementById('btnCloseModal').onclick = function() { document.getElementById('apiModal').style.display = 'none'; };
   document.getElementById('btnSaveKey').onclick = function() {
-    localStorage.setItem('g_key', document.getElementById('keyInput').value.trim());
+    var cleanKey = document.getElementById('keyInput').value.replace(/\s+/g, '');
+    localStorage.setItem('g_key', cleanKey);
     document.getElementById('apiModal').style.display = 'none';
     alert("သိမ်းဆည်းပြီးပါပြီ ✅");
   };
@@ -50,7 +51,8 @@ document.addEventListener("DOMContentLoaded", function() {
   cy.onchange = runCal; cm.onchange = runCal; cd.onchange = runCal; runCal();
 
   async function askAI(prompt, outEl, btnEl, copyEl) {
-    var key = localStorage.getItem('g_key');
+    var rawKey = localStorage.getItem('g_key') || '';
+    var key = rawKey.replace(/\s+/g, '');
     if (!key) { alert("ညာဘက်အပေါ်က ⚙️ API Key အရင်ထည့်ပါ!"); return; }
     var oldText = btnEl.textContent;
     btnEl.textContent = "စဉ်းစားနေပါသည်... ✨";
@@ -61,7 +63,8 @@ document.addEventListener("DOMContentLoaded", function() {
     var lastErr = "Network Error";
     for (var i = 0; i < models.length; i++) {
       try {
-        var r = await fetch('https://googleapis.com' + models.at(i) + ':generateContent', {
+        var apiUrl = 'https://googleapis.com' + models.at(i) + '%3AgenerateContent';
+        var r = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
