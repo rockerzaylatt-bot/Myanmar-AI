@@ -1,12 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
-  function tick() {
-    var d = new Date();
-    var t = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    var el = document.getElementById('ygnTime');
-    if (el) el.textContent = "🇲🇲 ရန်ကုန် - " + t;
-  }
-  setInterval(tick, 1000);
-  tick();
+  setInterval(function() {
+    var t = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('ygnTime').textContent = "🇲🇲 ရန်ကုန် - " + t;
+  }, 1000);
 
   document.querySelectorAll('.tab-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
@@ -17,27 +13,25 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  document.querySelectorAll('.pills').forEach(function(group) {
-    group.querySelectorAll('.pill').forEach(function(p) {
+  document.querySelectorAll('.pills').forEach(function(g) {
+    g.querySelectorAll('.pill').forEach(function(p) {
       p.addEventListener('click', function() {
-        group.querySelectorAll('.pill').forEach(function(x) { x.classList.remove('selected'); });
+        g.querySelectorAll('.pill').forEach(function(x) { x.classList.remove('selected'); });
         p.classList.add('selected');
       });
     });
   });
 
-  document.getElementById('btnApi').addEventListener('click', function() {
+  document.getElementById('btnApi').onclick = function() {
     document.getElementById('keyInput').value = localStorage.getItem('g_key') || '';
     document.getElementById('apiModal').style.display = 'flex';
-  });
-  document.getElementById('btnCloseModal').addEventListener('click', function() {
-    document.getElementById('apiModal').style.display = 'none';
-  });
-  document.getElementById('btnSaveKey').addEventListener('click', function() {
+  };
+  document.getElementById('btnCloseModal').onclick = function() { document.getElementById('apiModal').style.display = 'none'; };
+  document.getElementById('btnSaveKey').onclick = function() {
     localStorage.setItem('g_key', document.getElementById('keyInput').value.trim());
     document.getElementById('apiModal').style.display = 'none';
     alert("သိမ်းဆည်းပြီးပါပြီ ✅");
-  });
+  };
 
   var cy = document.getElementById('cYear'), cd = document.getElementById('cDay'), cm = document.getElementById('cMonth');
   for (var y = 2026; y >= 1926; y--) { var o = document.createElement('option'); o.value = y; o.textContent = y + " ခု"; cy.appendChild(o); }
@@ -53,8 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var maha = mahas[((dt.getDay() + 1) - (me % 7) + 7) % 7];
     document.getElementById('calOut').innerHTML = "မွေးနေ့: " + days[dt.getDay()] + "သား/သမီး<br>မြန်မာသက္ကရာဇ်: " + me + " ခုနှစ်<br>မဟာဘုတ်: " + maha + "ဖွား";
   }
-  cy.addEventListener('change', runCal); cm.addEventListener('change', runCal); cd.addEventListener('change', runCal);
-  runCal();
+  cy.onchange = runCal; cm.onchange = runCal; cd.onchange = runCal; runCal();
 
   async function askAI(prompt, outEl, btnEl, copyEl) {
     var key = localStorage.getItem('g_key');
@@ -64,7 +57,8 @@ document.addEventListener("DOMContentLoaded", function() {
     outEl.style.display = 'none';
     if (copyEl) copyEl.style.display = 'none';
 
-    var models = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-3.8-flash'];
+    var models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3.8-flash'];
+    var lastErr = "Network Error";
     for (var i = 0; i < models.length; i++) {
       try {
         var r = await fetch('https://googleapis.com' + models[i] + ':generateContent', {
@@ -79,34 +73,33 @@ document.addEventListener("DOMContentLoaded", function() {
           if (copyEl) copyEl.style.display = 'block';
           btnEl.textContent = oldText;
           return;
+        } else if (j.error) {
+          lastErr = j.error.message;
         }
-      } catch (e) {}
+      } catch (e) { lastErr = e.message; }
     }
     btnEl.textContent = oldText;
-    alert("ချိတ်ဆက်မရပါ။ VPN ဖွင့်ထားခြင်း ရှိမရှိ နှင့် API Key ပြန်စစ်ပါ။");
+    alert("Google Error: " + lastErr);
   }
 
-  document.getElementById('btnGenTT').addEventListener('click', function() {
+  document.getElementById('btnGenTT').onclick = function() {
     var cat = document.querySelector('#catPills .selected').textContent;
     var top = document.getElementById('ttTopic').value.trim();
     if (!top) return alert("အကြောင်းအရာ ရေးပါ!");
     askAI("Myanmar TikTok viral expert. Spoken Burmese slang. Category: " + cat + ". Topic: " + top + ". Give 3 viral captions with hashtags and a 30s speaking script.", document.getElementById('resTT'), this, document.getElementById('copyTT'));
-  });
-
-  document.getElementById('copyTT').addEventListener('click', function() {
+  };
+  document.getElementById('copyTT').onclick = function() {
     navigator.clipboard.writeText(document.getElementById('resTT').textContent);
     alert("Copy ကူးပြီးပါပြီ ✅");
-  });
-
-  document.getElementById('btnGenAd').addEventListener('click', function() {
+  };
+  document.getElementById('btnGenAd').onclick = function() {
     var top = document.getElementById('adTopic').value.trim();
     if (!top) return alert("လုပ်ငန်းအမျိုးအစား ရေးပါ!");
     askAI("Myanmar TikTok marketing expert. Spoken Burmese advice for: " + top + ". Give 3 video ideas and 3 ad tips.", document.getElementById('resAd'), this, null);
-  });
-
-  document.getElementById('btnGenVd').addEventListener('click', function() {
+  };
+  document.getElementById('btnGenVd').onclick = function() {
     var day = document.querySelector('#dayPills .selected').textContent;
     var q = document.getElementById('vdTopic').value.trim() || "ယနေ့ ကံကြမ္မာ";
     askAI("Warm Myanmar astrologer. Spoken Burmese daily horoscope for " + day + " regarding " + q + ". Include fortune, lucky color/number, and easy yadayar.", document.getElementById('resVd'), this, null);
-  });
+  };
 });
