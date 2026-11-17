@@ -57,18 +57,18 @@ document.addEventListener("DOMContentLoaded", function() {
     outEl.style.display = 'none';
     if (copyEl) copyEl.style.display = 'none';
 
-    var models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3.8-flash'];
+    var models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
     var lastErr = "Network Error";
     for (var i = 0; i < models.length; i++) {
       try {
-        var r = await fetch('https://googleapis.com' + models[i] + ':generateContent', {
+        var r = await fetch('https://googleapis.com' + models.at(i) + ':generateContent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         var j = await r.json();
-        if (j.candidates && j.candidates[0] && j.candidates[0].content) {
-          outEl.textContent = j.candidates[0].content.parts[0].text;
+        if (j.candidates && j.candidates.at(0)) {
+          outEl.textContent = j.candidates.at(0).content.parts.at(0).text;
           outEl.style.display = 'block';
           if (copyEl) copyEl.style.display = 'block';
           btnEl.textContent = oldText;
