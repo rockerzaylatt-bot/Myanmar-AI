@@ -1,0 +1,112 @@
+document.addEventListener("DOMContentLoaded", function() {
+  function tick() {
+    var d = new Date();
+    var t = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    var el = document.getElementById('ygnTime');
+    if (el) el.textContent = "🇲🇲 ရန်ကုန် - " + t;
+  }
+  setInterval(tick, 1000);
+  tick();
+
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.pills').forEach(function(group) {
+    group.querySelectorAll('.pill').forEach(function(p) {
+      p.addEventListener('click', function() {
+        group.querySelectorAll('.pill').forEach(function(x) { x.classList.remove('selected'); });
+        p.classList.add('selected');
+      });
+    });
+  });
+
+  document.getElementById('btnApi').addEventListener('click', function() {
+    document.getElementById('keyInput').value = localStorage.getItem('g_key') || '';
+    document.getElementById('apiModal').style.display = 'flex';
+  });
+  document.getElementById('btnCloseModal').addEventListener('click', function() {
+    document.getElementById('apiModal').style.display = 'none';
+  });
+  document.getElementById('btnSaveKey').addEventListener('click', function() {
+    localStorage.setItem('g_key', document.getElementById('keyInput').value.trim());
+    document.getElementById('apiModal').style.display = 'none';
+    alert("သိမ်းဆည်းပြီးပါပြီ ✅");
+  });
+
+  var cy = document.getElementById('cYear'), cd = document.getElementById('cDay'), cm = document.getElementById('cMonth');
+  for (var y = 2026; y >= 1926; y--) { var o = document.createElement('option'); o.value = y; o.textContent = y + " ခု"; cy.appendChild(o); }
+  for (var d = 1; d <= 31; d++) { var o = document.createElement('option'); o.value = d; o.textContent = d + " ရက်"; cd.appendChild(o); }
+  var now = new Date(); cy.value = now.getFullYear(); cm.value = now.getMonth() + 1; cd.value = now.getDate();
+
+  function runCal() {
+    var y = parseInt(cy.value), m = parseInt(cm.value), d = parseInt(cd.value);
+    var dt = new Date(y, m - 1, d);
+    var days = ["တနင်္ဂနွေ", "တနင်္လာ", "အင်္ဂါ", "ဗုဒ္ဓဟူး", "ကြာသပတေး", "သောကြာ", "စနေ"];
+    var me = (m < 4 || (m === 4 && d < 17)) ? y - 639 : y - 638;
+    var mahas = ["ဘင်္ဂ", "ပုတိ", "သိုက်", "မရဏ", "အဓိပတိ", "ရာဇ", "အထွန်း"];
+    var maha = mahas[((dt.getDay() + 1) - (me % 7) + 7) % 7];
+    document.getElementById('calOut').innerHTML = "မွေးနေ့: " + days[dt.getDay()] + "သား/သမီး<br>မြန်မာသက္ကရာဇ်: " + me + " ခုနှစ်<br>မဟာဘုတ်: " + maha + "ဖွား";
+  }
+  cy.addEventListener('change', runCal); cm.addEventListener('change', runCal); cd.addEventListener('change', runCal);
+  runCal();
+
+  async function askAI(prompt, outEl, btnEl, copyEl) {
+    var key = localStorage.getItem('g_key');
+    if (!key) { alert("ညာဘက်အပေါ်က ⚙️ API Key အရင်ထည့်ပါ!"); return; }
+    var oldText = btnEl.textContent;
+    btnEl.textContent = "စဉ်းစားနေပါသည်... ✨";
+    outEl.style.display = 'none';
+    if (copyEl) copyEl.style.display = 'none';
+
+    var models = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-3.8-flash'];
+    for (var i = 0; i < models.length; i++) {
+      try {
+        var r = await fetch('https://googleapis.com' + models[i] + ':generateContent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        var j = await r.json();
+        if (j.candidates && j.candidates[0]) {
+          outEl.textContent = j.candidates[0].content.parts[0].text;
+          outEl.style.display = 'block';
+          if (copyEl) copyEl.style.display = 'block';
+          btnEl.textContent = oldText;
+          return;
+        }
+      } catch (e) {}
+    }
+    btnEl.textContent = oldText;
+    alert("ချိတ်ဆက်မရပါ။ VPN ဖွင့်ထားခြင်း ရှိမရှိ နှင့် API Key ပြန်စစ်ပါ။");
+  }
+
+  document.getElementById('btnGenTT').addEventListener('click', function() {
+    var cat = document.querySelector('#catPills .selected').textContent;
+    var top = document.getElementById('ttTopic').value.trim();
+    if (!top) return alert("အကြောင်းအရာ ရေးပါ!");
+    askAI("Myanmar TikTok viral expert. Spoken Burmese slang. Category: " + cat + ". Topic: " + top + ". Give 3 viral captions with hashtags and a 30s speaking script.", document.getElementById('resTT'), this, document.getElementById('copyTT'));
+  });
+
+  document.getElementById('copyTT').addEventListener('click', function() {
+    navigator.clipboard.writeText(document.getElementById('resTT').textContent);
+    alert("Copy ကူးပြီးပါပြီ ✅");
+  });
+
+  document.getElementById('btnGenAd').addEventListener('click', function() {
+    var top = document.getElementById('adTopic').value.trim();
+    if (!top) return alert("လုပ်ငန်းအမျိုးအစား ရေးပါ!");
+    askAI("Myanmar TikTok marketing expert. Spoken Burmese advice for: " + top + ". Give 3 video ideas and 3 ad tips.", document.getElementById('resAd'), this, null);
+  });
+
+  document.getElementById('btnGenVd').addEventListener('click', function() {
+    var day = document.querySelector('#dayPills .selected').textContent;
+    var q = document.getElementById('vdTopic').value.trim() || "ယနေ့ ကံကြမ္မာ";
+    askAI("Warm Myanmar astrologer. Spoken Burmese daily horoscope for " + day + " regarding " + q + ". Include fortune, lucky color/number, and easy yadayar.", document.getElementById('resVd'), this, null);
+  });
+});
