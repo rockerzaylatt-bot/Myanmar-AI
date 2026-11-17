@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           try { resolve(JSON.parse(xhr.responseText)); }
-          catch (e) { reject(new Error("Status " + xhr.status)); }
+          catch (e) { reject(new Error("HTTP " + xhr.status)); }
         }
       };
       xhr.onerror = function() { reject(new Error("Network Error")); };
@@ -75,13 +75,17 @@ document.addEventListener("DOMContentLoaded", function() {
     outEl.style.display = 'none';
     if (copyEl) copyEl.style.display = 'none';
 
-    var models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+    var endpoints = [
+      "https://googleapis.com" + encodeURIComponent(key),
+      "https://googleapis.com" + encodeURIComponent(key),
+      "https://googleapis.com" + encodeURIComponent(key)
+    ];
+
     var lastErr = "Connection Failed";
-    for (var i = 0; i < models.length; i++) {
+    for (var i = 0; i < endpoints.length; i++) {
       try {
-        var base = "https://googleapis.com";
-        var endpoint = base + models.at(i) + ":generateContent?key=" + encodeURIComponent(key);
-        var j = await sendXHR(endpoint, { contents: [{ parts: [{ text: prompt }] }] });
+        var payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+        var j = await sendXHR(endpoints.at(i), payload);
         if (j.candidates && j.candidates.at(0)) {
           outEl.textContent = j.candidates.at(0).content.parts.at(0).text;
           outEl.style.display = 'block';
